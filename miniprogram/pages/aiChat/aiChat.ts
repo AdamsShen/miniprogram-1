@@ -57,8 +57,9 @@ Component({
         method: 'POST',
         data: {
           workflow_id: "7488372093508288538", // 您的工作流ID
-          inputs: {
-            message: text                // 用户输入的消息
+          parameters: {
+            "input_text": text,                // 用户输入的消息
+            "user_id": "1234567890"
           }
         },
         header: {
