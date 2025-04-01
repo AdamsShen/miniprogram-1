@@ -1,0 +1,33 @@
+<!--aiChat.wxml-->
+<navigation-bar title="AI聊天" back="{{true}}" color="black" background="#FFF"></navigation-bar>
+<view class="container">
+  <view class="input-section">
+    <textarea class="input-box" placeholder="请输入您想问的内容..." value="{{inputText}}" bindinput="onInputChange" maxlength="500"></textarea>
+    <view class="input-count">{{inputLength}}/500</view>
+  </view>
+  
+  <view class="button-section">
+    <button class="submit-button" bindtap="onSubmit" disabled="{{!inputText || isLoading}}">
+      <text wx:if="{{!isLoading}}">发送</text>
+      <text wx:else>处理中...</text>
+    </button>
+  </view>
+  
+  <view class="result-section" wx:if="{{hasResult}}">
+    <view class="divider"></view>
+    <view class="result-title">AI回复</view>
+    
+    <view class="text-result">
+      <text>{{resultText}}</text>
+    </view>
+    
+    <view class="image-result" wx:if="{{resultImageUrl}}">
+      <image src="{{resultImageUrl}}" mode="widthFix" bindtap="previewImage"></image>
+    </view>
+  </view>
+  
+  <view class="loading-section" wx:if="{{isLoading}}">
+    <view class="loading-icon"></view>
+    <text class="loading-text">AI正在思考中...</text>
+  </view>
+</view> 
