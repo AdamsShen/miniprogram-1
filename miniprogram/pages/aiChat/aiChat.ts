@@ -43,66 +43,75 @@ Component({
       // 记录日志
       console.log('正在提交请求，内容:', inputText);
       
-      // 模拟API调用
-      // 注意：这里是临时的模拟实现，后续需要替换为真实的Coze API调用
-      setTimeout(() => {
-        this.mockApiCall(inputText);
-      }, 1500);
+      // 调用实际的Coze API
+      this.callCozeApi(inputText);
     },
     
-    // 模拟API调用（后续替换为真实API）
-    mockApiCall(text: string) {
-      // 记录日志
-      console.log('模拟API调用中...');
-      
-      // 模拟返回结果
-      const mockResult = {
-        text: `这是对"${text}"的AI回复。Coze API将在这里返回文本内容。这只是一个模拟响应，实际开发中需要替换为真实的API调用。`,
-        imageUrl: 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
-      };
-      
-      // 设置返回结果
-      this.setData({
-        isLoading: false,
-        hasResult: true,
-        resultText: mockResult.text,
-        resultImageUrl: mockResult.imageUrl
-      });
-      
-      // 记录日志
-      console.log('API调用完成，返回结果:', mockResult);
-    },
-    
-    // 实际的API调用（后续实现）
+    // 实际的API调用
     callCozeApi(text: string) {
-      // 这里需要实现真实的Coze API调用
-      // 代码实现将在API接口信息补充后添加
-      console.log('待实现: 调用Coze API，参数:', text);
+      // 记录日志
+      console.log('调用Coze API，参数:', text);
       
-      // 示例实现框架
       wx.request({
-        url: '后续补充的Coze API地址',
+        url: 'https://api.coze.cn/v1/workflow/run',
         method: 'POST',
         data: {
-          query: text
-          // 其他可能需要的参数
+          workflow_id: "7488372093508288538", // 您的工作流ID
+          inputs: {
+            message: text                // 用户输入的消息
+          }
         },
         header: {
           'content-type': 'application/json',
-          // 可能需要的认证信息
-          'Authorization': '后续补充的认证信息'
+          'Authorization': 'Bearer pat_qpvAXJyfrpj8Sx6cDpHFu4j2D7Mrs1AqJQEg6DhftOdqWE3AQKU4MZOYgBsfOt6a'  // 您的API密钥
         },
         success: (res: any) => {
           console.log('API调用成功:', res.data);
           
           // 处理返回结果
-          const result = res.data;
-          this.setData({
-            isLoading: false,
-            hasResult: true,
-            resultText: result.text || '未返回文本内容',
-            resultImageUrl: result.imageUrl || ''
-          });
+          if (res.data.code === 0) { // 使用code === 0判断成功
+            try {
+              // 解析返回的data字段，它可能是JSON字符串
+              let dataContent = res.data.data;
+              if (typeof dataContent === 'string') {
+                dataContent = JSON.parse(dataContent);
+              }
+              
+              // 从正确的字段获取文本和图片
+              const textContent = dataContent.output;
+              const imageUrl = dataContent.pic;
+              
+              console.log('解析后的内容:', { text: textContent, imageUrl });
+              
+              this.setData({
+                isLoading: false,
+                hasResult: true,
+                resultText: textContent || '未返回文本内容',
+                resultImageUrl: imageUrl || ''
+              });
+            } catch (error) {
+              console.error('解析返回数据失败:', error);
+              wx.showToast({
+                title: '解析返回数据失败',
+                icon: 'none',
+                duration: 2000
+              });
+              
+              this.setData({
+                isLoading: false
+              });
+            }
+          } else {
+            wx.showToast({
+              title: '请求失败: ' + (res.data.msg || '未知错误'),
+              icon: 'none',
+              duration: 2000
+            });
+            
+            this.setData({
+              isLoading: false
+            });
+          }
         },
         fail: (err: any) => {
           console.error('API调用失败:', err);
